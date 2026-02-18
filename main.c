@@ -20,7 +20,9 @@ void initEditor(void)
 	E.cy = 0;
 	E.numRows = 0;
 	E.row = NULL;
+	E.coloff = 0;
 	E.rowOff = 0;
+	E.scrollOff=0;
 
 	if(getWindowSize(&E.screenRows, &E.screenCols)==-1) die("getWindowSize");
 }

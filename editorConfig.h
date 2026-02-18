@@ -2,10 +2,13 @@
 #include "rows.h"
 #ifndef EC_H
 #define EC_H
+
 struct editorConfig {
 	int cx;
 	int cy;
 	int rowOff;
+	int scrollOff;
+	int coloff;
 	int screenRows;
 	int screenCols;
 	int numRows;

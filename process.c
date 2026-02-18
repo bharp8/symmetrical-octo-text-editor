@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
+//moves cursor. handles all functionality related to that. Must be called in processKeypress
 void editorMoveCursor(char key)
 {
 	switch(key){
@@ -12,7 +13,7 @@ void editorMoveCursor(char key)
 				E.cx--;
 			break;
 		case 'j':
-			if(E.cy < E.screenRows)
+			if(E.cy < E.numRows)
 				E.cy++;
 			break;
 		case 'k':
@@ -20,12 +21,13 @@ void editorMoveCursor(char key)
 				E.cy--;
 			break;
 		case 'l':
-			if(E.cy<E.screenCols)
+			if(E.cy < E.screenCols)
 				E.cx++;
 			break;
 	}
 }
 
+//reads the next key. should probably not be changed.
 char editorReadKey(void)
 {
 	int nread;
@@ -36,6 +38,7 @@ char editorReadKey(void)
 	return c;
 }
 
+//Processes keypress. to add functionality, do it here.
 void editorProcessKeypress(void)
 {
 	char c = editorReadKey();

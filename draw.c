@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+//gets window size. Probably shouldn't be changed, unless to add windows functionality.
 int getWindowSize(int *rows, int *cols)
 {
 	struct winsize ws;
@@ -19,11 +20,13 @@ int getWindowSize(int *rows, int *cols)
 	}
 }
 
+//IP. Draws all rows.
 void editorDrawRows(struct abuf *ab)
 {
 
 	for(int y = 0; y < E.screenRows; y++){
-		if(y>=E.numRows){
+		int fileRow = y + E.rowOff;
+		if(fileRow >= E.numRows){
 			if(E.numRows == 0 && y == E.screenRows/3){
 				char welcome[80];
 				int welcomelen = snprintf(welcome, strlen(welcome), "BMH editor version ", 1);
@@ -41,9 +44,10 @@ void editorDrawRows(struct abuf *ab)
 			}
 		}
 		else {
-			int len = E.row[y].size;
+			int len = E.row[fileRow].size - E.coloff;
+			if(len < 0) len = 0;
 			if(len > E.screenCols) len = E.screenCols;
-			abAppend(ab, E.row[y].chars, len);
+			abAppend(ab, &E.row[fileRow].chars[E.coloff], len);
 		}
 
 		abAppend(ab, "\x1b[K", 3);
@@ -53,8 +57,27 @@ void editorDrawRows(struct abuf *ab)
 	}
 }
 
+//scrolling functionality.
+void editorScroll(void)
+{
+	if(E.cx < E.rowOff){
+		E.rowOff = E.cx;
+	}
+	if(E.cx >= E.rowOff + E.screenRows){
+		E.rowOff = E.cx - E.screenRows + 1;
+	}
+	if(E.cy < E.coloff){
+		E.coloff = E.cy;
+	}
+	if(E.cy >= E.coloff + E.screenCols){
+		E.coloff = E.cy - E.screenCols + 1;
+	}
+}
+
+//refreshes screen. In progress.
 void editorRefreshScreen(void)
 {
+	editorScroll();
 	struct abuf ab = ABUF_INIT;
 
 
@@ -64,7 +87,7 @@ void editorRefreshScreen(void)
 	editorDrawRows(&ab);
 
 	char buf[32];
-	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy +1, E.cx+1);
+	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy - E.rowOff +1, E.cx+1);
 	abAppend(&ab, buf, strlen(buf));
 
 	abAppend(&ab, "\x1b[?25h", 6);
