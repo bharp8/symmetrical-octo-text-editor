@@ -21,8 +21,7 @@ void editorMoveCursor(char key)
 				E.cy--;
 			break;
 		case 'l':
-			if(E.cy < E.screenCols)
-				E.cx++;
+			E.cx++;
 			break;
 	}
 }

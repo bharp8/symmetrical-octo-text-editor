@@ -60,17 +60,17 @@ void editorDrawRows(struct abuf *ab)
 //scrolling functionality.
 void editorScroll(void)
 {
-	if(E.cx < E.rowOff){
-		E.rowOff = E.cx;
+	if(E.cy < E.rowOff){
+		E.rowOff = E.cy;
 	}
-	if(E.cx >= E.rowOff + E.screenRows){
-		E.rowOff = E.cx - E.screenRows + 1;
+	if(E.cy >= E.rowOff + E.screenRows){
+		E.rowOff = E.cy - E.screenRows + 1;
 	}
-	if(E.cy < E.coloff){
-		E.coloff = E.cy;
+	if(E.cx < E.coloff){
+		E.coloff = E.cx;
 	}
-	if(E.cy >= E.coloff + E.screenCols){
-		E.coloff = E.cy - E.screenCols + 1;
+	if(E.cx >= E.coloff + E.screenCols){
+		E.coloff = E.cx - E.screenCols + 1;
 	}
 }
 
@@ -87,7 +87,7 @@ void editorRefreshScreen(void)
 	editorDrawRows(&ab);
 
 	char buf[32];
-	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy - E.rowOff +1, E.cx+1);
+	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy - E.rowOff +1, E.cx - E.coloff+1);
 	abAppend(&ab, buf, strlen(buf));
 
 	abAppend(&ab, "\x1b[?25h", 6);
