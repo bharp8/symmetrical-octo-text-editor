@@ -7,6 +7,7 @@
 //moves cursor. handles all functionality related to that. Must be called in processKeypress
 void editorMoveCursor(char key)
 {
+	erow *row = (E.cy >= E.numRows) ? NULL : &E.row[E.cy];
 	switch(key){
 		case 'h':
 			if(E.cx!=0)
@@ -21,8 +22,16 @@ void editorMoveCursor(char key)
 				E.cy--;
 			break;
 		case 'l':
-			E.cx++;
+			if(row && E.cx < row->size) {
+				E.cx++;
+			}
 			break;
+
+	}
+	row = (E.cy >= E.numRows) ? NULL : &E.row[E.cy];
+	int rowlen = row ? row->size : 0;
+	if (E.cx > rowlen){
+		E.cx = rowlen;
 	}
 }
 
