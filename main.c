@@ -18,6 +18,7 @@ void initEditor(void)
 {
 	E.cx = 0;
 	E.cy = 0;
+	E.rx =0;
 	E.numRows = 0;
 	E.row = NULL;
 	E.coloff = 0;
@@ -25,6 +26,7 @@ void initEditor(void)
 	E.scrollOff=0;
 
 	if(getWindowSize(&E.screenRows, &E.screenCols)==-1) die("getWindowSize");
+	E.screenRows--;
 }
 
 int main(int argc, char* argv[])

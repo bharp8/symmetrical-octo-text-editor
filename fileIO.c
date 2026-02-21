@@ -2,9 +2,15 @@
 #include "errors.h"
 #include <stdlib.h>
 #include "rows.h"
+#include <stdlib.h>
+#include "editorConfig.h"
+#include <string.h>
 
 void editorOpen(char * filename)
 {
+	free(E.filename);
+	E.filename = strdup(filename);
+
 	FILE *fp = fopen(filename, "r");
 	if(!fp) die("fopen");
 

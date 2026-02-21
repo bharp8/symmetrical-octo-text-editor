@@ -20,6 +20,26 @@ int getWindowSize(int *rows, int *cols)
 	}
 }
 
+void editorDrawStatus(struct abuf *ab)
+{
+	abAppend(ab,"\x1b[7m",4);//inverts colors of bar
+	char status[80], rstatus[80];
+	int len = snprintf(status, sizeof(status), "%.20s - %d lines", E.filename ? E.filename : "[No Name]", E.numRows);
+	int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d",E.cy+1, E.numRows);
+	if(len > E.screenCols) len = E.screenCols;
+	abAppend(ab, status, len);
+	while(len< E.screenCols){
+		if(E.screenCols - len == rlen){
+			abAppend(ab,rstatus,rlen);
+			break;
+		}
+		else {
+			abAppend(ab, " ", 1);
+			len++;
+		}
+	}
+	abAppend(ab, "\x1b[m", 3);//uninverts
+}
 //IP. Draws all rows.
 void editorDrawRows(struct abuf *ab)
 {
@@ -44,33 +64,48 @@ void editorDrawRows(struct abuf *ab)
 			}
 		}
 		else {
-			int len = E.row[fileRow].size - E.coloff;
+			int len = E.row[fileRow].rsize - E.coloff;
 			if(len < 0) len = 0;
 			if(len > E.screenCols) len = E.screenCols;
-			abAppend(ab, &E.row[fileRow].chars[E.coloff], len);
+			abAppend(ab, &E.row[fileRow].render[E.coloff], len);
 		}
 
 		abAppend(ab, "\x1b[K", 3);
-		if(y<E.screenRows -1 ){
-			abAppend(ab, "\r\n", 2);
-		}
+		abAppend(ab, "\r\n", 2);
 	}
+}
+
+int editorRowCxToRx(erow *row, int cx)
+{
+	int rx = 0;
+	for(int i = 0; i < cx; i++){
+		if(row->chars[i] == '\t'){
+			rx += (5 -1) - (rx % 5);
+		}
+		rx++;
+	}
+	return rx;
 }
 
 //scrolling functionality.
 void editorScroll(void)
 {
+	E.rx = 0;
+	if(E.cy < E.numRows){
+		E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
+	}
+
 	if(E.cy < E.rowOff){
 		E.rowOff = E.cy;
 	}
 	if(E.cy >= E.rowOff + E.screenRows){
 		E.rowOff = E.cy - E.screenRows + 1;
 	}
-	if(E.cx < E.coloff){
-		E.coloff = E.cx;
+	if(E.rx < E.coloff){
+		E.coloff = E.rx;
 	}
-	if(E.cx >= E.coloff + E.screenCols){
-		E.coloff = E.cx - E.screenCols + 1;
+	if(E.rx >= E.coloff + E.screenCols){
+		E.coloff = E.rx - E.screenCols + 1;
 	}
 }
 
@@ -85,9 +120,10 @@ void editorRefreshScreen(void)
 	abAppend(&ab, "\x1b[H", 3);
 
 	editorDrawRows(&ab);
+	editorDrawStatus(&ab);
 
 	char buf[32];
-	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy - E.rowOff +1, E.cx - E.coloff+1);
+	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy - E.rowOff +1, E.rx - E.coloff+1);
 	abAppend(&ab, buf, strlen(buf));
 
 	abAppend(&ab, "\x1b[?25h", 6);
