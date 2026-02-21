@@ -1,9 +1,13 @@
 #include <unistd.h>
+#include "rows.h"
 #include "editorConfig.h"
 #include "errors.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 
+
+void insertChar(erow *row, int at, int c);
 //moves cursor. handles all functionality related to that. Must be called in processKeypress
 void editorMoveCursor(char key)
 {
@@ -35,6 +39,15 @@ void editorMoveCursor(char key)
 	}
 }
 
+void editorInsertChar(int c)
+{
+	if(E.cy == E.numRows){
+		editorAppendRow("", 0 );
+	}
+	insertChar(&E.row[E.cy], E.cx, c);
+	E.cx++;
+}
+
 //reads the next key. should probably not be changed.
 char editorReadKey(void)
 {
@@ -44,6 +57,16 @@ char editorReadKey(void)
 		if(nread == -1 && errno != EAGAIN) die("read");
 	}
 	return c;
+}
+
+void insertChar(erow *row, int at, int c)
+{
+	if(at < 0 || at > row->size) at = row->size;
+	row->chars = realloc(row->chars, row->size + 2);
+	memmove(&row->chars[at +1], &row->chars[at],row->size - at + 1);
+	row->size++;
+	row->chars[at] = c;
+	editorUpdateRow(row);
 }
 
 //Processes keypress. to add functionality, do it here.
@@ -64,6 +87,8 @@ void editorProcessKeypress(void)
 		case 'l':
 			editorMoveCursor(c);
 			break;
+		case 'i':
+			editorInsertChar(editorReadKey());
 	}
 }
 

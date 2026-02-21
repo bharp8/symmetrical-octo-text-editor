@@ -19,5 +19,6 @@ struct abuf {
 
 void abAppend(struct abuf *ab, const char* s, int len);
 void editorAppendRow(char *s, size_t len);
+void editorUpdateRow(erow *row);
 void abFree(struct abuf* ab);
 #endif
