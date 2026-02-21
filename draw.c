@@ -1,4 +1,5 @@
 #include "editorConfig.h"
+#include <stdarg.h>
 #include "draw.h"
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -20,6 +21,30 @@ int getWindowSize(int *rows, int *cols)
 	}
 }
 
+void editorSetStatusMessage(const char* fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(E.statusMessage, sizeof(E.statusMessage), fmt, ap);
+	va_end(ap);
+	E.statusmsg_time = time(NULL);
+
+}
+
+void editorDrawMessage(struct abuf *ab)
+{
+	abAppend(ab, "\x1b[k", 3);
+	char bar[80];
+	int len = snprintf(bar, sizeof(bar), "%s", E.statusMessage);
+
+	if(len > E.screenCols) len = E.screenCols;
+	if(time(NULL) - E.statusmsg_time < 5) abAppend(ab,bar, len);
+	while(len < E.screenCols){
+		abAppend(ab, " ", 1);
+		len++;
+	}
+
+}
 void editorDrawStatus(struct abuf *ab)
 {
 	abAppend(ab,"\x1b[7m",4);//inverts colors of bar
@@ -39,6 +64,7 @@ void editorDrawStatus(struct abuf *ab)
 		}
 	}
 	abAppend(ab, "\x1b[m", 3);//uninverts
+	abAppend(ab, "\r\n", 2);
 }
 //IP. Draws all rows.
 void editorDrawRows(struct abuf *ab)
@@ -121,6 +147,7 @@ void editorRefreshScreen(void)
 
 	editorDrawRows(&ab);
 	editorDrawStatus(&ab);
+	editorDrawMessage(&ab);
 
 	char buf[32];
 	snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy - E.rowOff +1, E.rx - E.coloff+1);

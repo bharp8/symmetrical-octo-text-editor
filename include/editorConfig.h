@@ -1,4 +1,5 @@
 #include <termios.h>
+#include <time.h>
 #include "rows.h"
 #ifndef EC_H
 #define EC_H
@@ -15,9 +16,12 @@ struct editorConfig {
 	int numRows;
 	char* filename;
 	erow *row;
+	char statusMessage[80];
+	time_t statusmsg_time;
 	struct termios orig_termios;
 };
 
 extern struct editorConfig E;
 
 #endif
+

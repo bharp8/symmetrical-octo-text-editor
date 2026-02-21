@@ -24,9 +24,11 @@ void initEditor(void)
 	E.coloff = 0;
 	E.rowOff = 0;
 	E.scrollOff=0;
+	E.statusMessage[0] = '\0';
+	E.statusmsg_time = 0;
 
 	if(getWindowSize(&E.screenRows, &E.screenCols)==-1) die("getWindowSize");
-	E.screenRows--;
+	E.screenRows--; E.screenRows--;
 }
 
 int main(int argc, char* argv[])
@@ -36,6 +38,8 @@ int main(int argc, char* argv[])
 	if(argc >= 2){
 		editorOpen(argv[1]);
 	}
+
+	editorSetStatusMessage("Help: q to quit.");
 
 	char c;
 	while(1){
