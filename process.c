@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include "draw.h"
 #include "rows.h"
 #include "editorConfig.h"
 #include "errors.h"
@@ -69,27 +70,57 @@ void insertChar(erow *row, int at, int c)
 	editorUpdateRow(row);
 }
 
-//Processes keypress. to add functionality, do it here.
-void editorProcessKeypress(void)
-{
-	char c = editorReadKey();
 
+void insertModeProcess(void)
+{
+	E.mode = INSERT;
+	editorRefreshScreen();
+	char c;
+	while(E.mode == INSERT){
+		c = editorReadKey();
+		if(c == '\033'){
+			E.mode = NORMAL;
+			break;
+		}
+		editorInsertChar(c);
+		editorRefreshScreen();
+	}
+}
+
+void visualModeProcess(void)
+{
+	die("ERROR: FEATURE  NOT IMPLEMENTED");
+}
+
+//Processes keypress. to add functionality, do it here.
+void normalModeProcess(void)
+{
+	E.mode = NORMAL;
+	editorRefreshScreen();
+
+	char c = editorReadKey();
 	switch(c){
 		case 'q':
 			write(STDOUT_FILENO, "\x1b[2J", 4);
 			write(STDOUT_FILENO, "\x1b[H", 3);
 			exit(0);
 			break;
-
 		case 'h':
 		case 'j':
 		case 'k':
 		case 'l':
 			editorMoveCursor(c);
 			break;
+		case 'o':
+			E.cx--;
+			editorInsertChar('\n');
+		case 'a':
+			E.cx++;
 		case 'i':
-			editorInsertChar(editorReadKey());
+			insertModeProcess();
+			break;
 	}
 }
+
 
 

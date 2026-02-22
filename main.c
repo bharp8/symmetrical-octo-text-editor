@@ -26,6 +26,7 @@ void initEditor(void)
 	E.scrollOff=0;
 	E.statusMessage[0] = '\0';
 	E.statusmsg_time = 0;
+	E.mode = NORMAL;
 
 	if(getWindowSize(&E.screenRows, &E.screenCols)==-1) die("getWindowSize");
 	E.screenRows--; E.screenRows--;
@@ -44,7 +45,7 @@ int main(int argc, char* argv[])
 	char c;
 	while(1){
 		editorRefreshScreen();
-		editorProcessKeypress();
+		normalModeProcess();
 	}
 	return 0;
 }

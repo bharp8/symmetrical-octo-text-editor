@@ -135,6 +135,12 @@ void editorScroll(void)
 	}
 }
 
+const char* getModeStr(void)
+{
+	enum mode mode= E.mode;
+	const char* modes[]={"NORMAL","INSERT","VISUAL"};
+	return modes[mode];
+}
 //refreshes screen. In progress.
 void editorRefreshScreen(void)
 {
@@ -144,6 +150,8 @@ void editorRefreshScreen(void)
 
 	abAppend(&ab, "\x1b[?25l", 6);
 	abAppend(&ab, "\x1b[H", 3);
+
+	editorSetStatusMessage("-- %s --", getModeStr());
 
 	editorDrawRows(&ab);
 	editorDrawStatus(&ab);
