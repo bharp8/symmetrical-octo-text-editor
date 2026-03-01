@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include "fileIO.h"
 #include "draw.h"
 #include "rows.h"
 #include "editorConfig.h"
@@ -10,7 +11,25 @@
 
 void insertChar(erow *row, int at, int c);
 //moves cursor. handles all functionality related to that. Must be called in processKeypress
+
+
+void editorRowDelChar(erow* row, int at)
+{
+	if(at < 0 || at >= row->size)return;
+	memmove(&row->chars[at], &row->chars[at+1], row->size - at);
+	row->size--;
+	editorUpdateRow(row);
+}
+void editorDelChar(void)
+{
+	if(E.cy == E.numRows) return ;
+	erow* row = &E.row[E.cy];
+	if(E.cx >= 0){
+		editorRowDelChar(row, E.cx);
+	}
+}
 void editorMoveCursor(char key)
+
 {
 	erow *row = (E.cy >= E.numRows) ? NULL : &E.row[E.cy];
 	switch(key){
@@ -78,12 +97,20 @@ void insertModeProcess(void)
 	char c;
 	while(E.mode == INSERT){
 		c = editorReadKey();
-		if(c == '\033'){
-			E.mode = NORMAL;
-			break;
+		switch(c){
+			case '\033':
+				E.mode = NORMAL;
+				break;
+			case '\r':
+				/** todo */
+				break;
+			case '\b':
+				editorDelChar();
+				break;
+			default:
+				editorInsertChar(c);
+				editorRefreshScreen();
 		}
-		editorInsertChar(c);
-		editorRefreshScreen();
 	}
 }
 
@@ -105,15 +132,22 @@ void normalModeProcess(void)
 			write(STDOUT_FILENO, "\x1b[H", 3);
 			exit(0);
 			break;
+		case 's':
+			editorSave();
 		case 'h':
 		case 'j':
 		case 'k':
 		case 'l':
 			editorMoveCursor(c);
 			break;
+		case 'x':
+			editorDelChar();
+			break;
 		case 'o':
-			E.cx--;
-			editorInsertChar('\n');
+			E.cy++;
+			E.cx = 0;
+			insertModeProcess();
+			break;
 		case 'a':
 			E.cx++;
 		case 'i':
